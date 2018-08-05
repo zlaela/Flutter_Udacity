@@ -4,8 +4,8 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:task_04_navigation/category.dart';
-import 'package:task_04_navigation/unit.dart';
+import 'package:task_05_navigation/category.dart';
+import 'package:task_05_navigation/unit.dart';
 
 final _backgroundColor = Colors.green[100];
 final _appBarTitle = "Unit Converter";
@@ -18,8 +18,21 @@ final _appBarElevation = 0.0;
 ///
 /// While it is named CategoryRoute, a more apt name would be CategoryScreen,
 /// because it is responsible for the UI at the route's destination.
-class CategoryScreen extends StatelessWidget {
+// Done: Make CategoryRoute a StatefulWidget
+class CategoryScreen extends StatefulWidget {
   const CategoryScreen();
+
+  @override
+  State<CategoryScreen> createState() => _CategoryScreenState();
+}
+
+class _CategoryScreenState extends State<CategoryScreen> {
+  // Done: Instead of re-creating a list of Categories in every build(),
+  // save this as a variable inside the State object and create
+  // the list at initialization (in initState()).
+  // This way, you also don't have to pass in the list of categories to
+  // _buildCategoryWidgets()
+  final _categories = <Category>[];
 
   static const _categoryNames = <String>[
     'Length',
@@ -54,13 +67,61 @@ class CategoryScreen extends StatelessWidget {
     Icons.pets
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _generateCategories();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Done: Create a list view of the Categories
+    final listView = Container(
+      color: _backgroundColor,
+      padding: EdgeInsets.symmetric(horizontal: 8.0),
+      child: _buildCategoryWidgets(),
+    );
+
+    final appBar = AppBar(
+      elevation: _appBarElevation,
+      title: Text(
+        _appBarTitle,
+        style: Theme.of(context).textTheme.body2.apply(
+          fontSizeFactor: 2.0,
+          color: Colors.black,
+        ),
+      ),
+      centerTitle: true,
+      backgroundColor: _backgroundColor,
+    );
+
+    return Scaffold(
+      appBar: appBar,
+      body: listView,
+    );
+  }
+
+  /// Genenerates a list of Category widgets from the above params and adds
+  /// them to [_categories]
+  void _generateCategories() {
+    for (String category in _categoryNames) {
+      int i = _categoryNames.indexOf(category);
+      _categories.add(Category(
+        name: category,
+        color: _baseColors[i],
+        iconLocation: _icons[i],
+        units: _retrieveUnitList(_categoryNames[i]),
+      ));
+    }
+  }
+
   /// Makes the correct number of rows for the list view.
   ///
   /// For portrait, we use a [ListView].
-  Widget _buildCategoryWidgets(List<Widget> categories) {
+  Widget _buildCategoryWidgets() {
     return ListView.builder(
-      itemBuilder: (BuildContext context, int index) => categories[index],
-      itemCount: categories.length,
+      itemBuilder: (BuildContext context, int index) => _categories[index],
+      itemCount: _categories.length,
     );
   }
 
@@ -73,45 +134,5 @@ class CategoryScreen extends StatelessWidget {
         conversion: i.toDouble(),
       );
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final _categories = <Category>[];
-
-    for (String category in _categoryNames) {
-      int i = _categoryNames.indexOf(category);
-      _categories.add(Category(
-        name: category,
-        color: _baseColors[i],
-        iconLocation: _icons[i],
-        units: _retrieveUnitList(_categoryNames[i]),
-      ));
-    }
-
-    // Done: Create a list view of the Categories
-    final listView = Container(
-      color: _backgroundColor,
-      padding: EdgeInsets.symmetric(horizontal: 8.0),
-      child: _buildCategoryWidgets(_categories),
-    );
-
-    final appBar = AppBar(
-      elevation: _appBarElevation,
-      title: Text(
-        _appBarTitle,
-        style: Theme.of(context).textTheme.body2.apply(
-              fontSizeFactor: 2.0,
-              color: Colors.black,
-            ),
-      ),
-      centerTitle: true,
-      backgroundColor: _backgroundColor,
-    );
-
-    return Scaffold(
-      appBar: appBar,
-      body: listView,
-    );
   }
 }
